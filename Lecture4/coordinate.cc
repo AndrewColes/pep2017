@@ -85,16 +85,40 @@ public:
         return *data;
     }
     
+    unique_ptr(const unique_ptr & other) = delete;
     
+    unique_ptr(unique_ptr && other)
+        : data(other.data) {
+            
+        other.data = nullptr;
+    }
     
+    unique_ptr & operator=(const unique_ptr & other) = delete;
+    
+    unique_ptr & operator=(unique_ptr && other) {
+        delete data;
+        data = other.data;
+        other.data = nullptr;
+        return *this;
+    }
 };
 
 
-
+void increment(const double & d) {
+    cout << d << endl;
+}
 
 int main() {
     
-    unique_ptr<Coordinate> c(new Coordinate(3,4));
+    /*unique_ptr<Coordinate> c(new Coordinate(3,4));
     cout << *c << endl;
+    
+    unique_ptr<Coordinate> d(new Coordinate(1,2));
+    
+    d = c;*/
+    
+    int x = 7;
+    increment(x);
+    cout << x << endl;
 }
 
