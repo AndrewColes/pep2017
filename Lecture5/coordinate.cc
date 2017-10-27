@@ -9,6 +9,9 @@ using std::vector;
 #include <memory>
 using std::unique_ptr;
 
+#include <string>
+using std::string;
+
 class Coordinate {
 
 public:
@@ -62,16 +65,39 @@ ostream & operator<<(ostream & o,
     return o;
 }
 
+class StreetAddress {
+  
+protected:
+    string postcode;    
+    int number;
+    
+public:
 
-class Bikes : public Coordinate {
+    StreetAddress(const string & postcodeIn,
+                  const int numberIn)
+    
+        : postcode(postcodeIn),
+          number(numberIn) {
+    }
+    
+    virtual void printDetails() const {
+        cout << number << ", " << postcode;
+    }
+};
+
+class Bikes : public Coordinate,
+              public StreetAddress {
   
 protected:
     int howMany;
     
 public:
     
-    Bikes(const int xIn, const int yIn, const int howManyIn)
+    Bikes(const int xIn, const int yIn,
+          const string & postcodeIn, const int numberIn,
+          const int howManyIn)
         : Coordinate(xIn, yIn),
+          StreetAddress(postcodeIn, numberIn),
           howMany(howManyIn) {
               
     }
@@ -82,6 +108,7 @@ public:
     
     virtual void printDetails() const override {
         Coordinate::printDetails();
+        StreetAddress::printDetails();
         cout << ": " << howMany << " bikes";
     }
 };
@@ -102,39 +129,55 @@ void letsFindOut(Coordinate * c) {
 
 int main() {
 
-    Coordinate c(3,4);
+    Coordinate c(3,4);    
+    //|  vtableptr  |  3  |  4  |
     
-    cout << &c << endl;
-    cout << &(c.x) << endl;
-    cout << &(c.y) << endl;
     
-    cout << "----\n";
     
-    Bikes notBoris(10,20,40);
+    Bikes notBoris(10,10,
+                   "WC2R 2LS",7,
+                   40);
+    //|  vtableptr  |  10  | 10 |  40 |
+    
+    
+    Bikes * b = &notBoris;
+    cout << b << "\n";
+    
+    Coordinate * someCoordinate = b;
+    cout << someCoordinate << "\n";
+    
+    StreetAddress * a = b;
+    cout << a << "\n";
+    
+    Bikes * bikesAgain = static_cast<Bikes*>(a);
+    cout << bikesAgain << "\n";
+    
     
     notBoris.printDetails();
     cout << "\n";
     
-    someFunction(notBoris);
+    // here be dragons...
+    /*
+    auto vTableForC = reinterpret_cast<double**>(&c);
     
-    vector<Coordinate> oops;
-    oops.push_back(Coordinate(0,0));
-    oops.push_back(Coordinate(1,0));
-    oops.push_back(Coordinate(2,0));
+    cout << "C   is at " << &c << "\n";
+    cout << "C.x is at " << &(c.x) << "\n";
+    cout << *vTableForC << "\n";
     
-    vector<unique_ptr<Coordinate> > phew;    
-    phew.emplace_back(new Coordinate(0,0));
+    auto vTableForB = reinterpret_cast<double**>(&notBoris);
+    
+    cout << "notBoris   is at " << &notBoris << "\n";
+    cout << "notBoris.x is at " << &(notBoris.x) << "\n";
+    cout << *vTableForB << "\n";
     
     
-    //phew.push_back(unique_ptr<Coordinate>(new Coordinate(0,0)));
+    *vTableForB = *vTableForC;
     
-    //phew[0] = unique_ptr<Coordinate>(new Coordinate(0,0));
+    cout << "After assignment: " << *vTableForB << "\n";    
+    cout << "After assignment: " << *vTableForB << "\n";
     
-    /*(3);
-    phew[0].reset(new Coordinate(0,0));
-    phew[1].reset(new Bikes(10,4,100));
-    phew[2].reset(new Coordinate(0,0));*/
-
-    letsFindOut(&notBoris);
-    letsFindOut(&c);
+    
+    notBoris.printDetails();
+    cout << "\n";
+    */
 }
