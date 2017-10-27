@@ -65,28 +65,8 @@ ostream & operator<<(ostream & o,
     return o;
 }
 
-class StreetAddress {
-  
-protected:
-    string postcode;    
-    int number;
-    
-public:
 
-    StreetAddress(const string & postcodeIn,
-                  const int numberIn)
-    
-        : postcode(postcodeIn),
-          number(numberIn) {
-    }
-    
-    virtual void printDetails() const {
-        cout << number << ", " << postcode;
-    }
-};
-
-class Bikes : public Coordinate,
-              public StreetAddress {
+class Bikes : public Coordinate {
   
 protected:
     int howMany;
@@ -94,10 +74,8 @@ protected:
 public:
     
     Bikes(const int xIn, const int yIn,
-          const string & postcodeIn, const int numberIn,
           const int howManyIn)
         : Coordinate(xIn, yIn),
-          StreetAddress(postcodeIn, numberIn),
           howMany(howManyIn) {
               
     }
@@ -108,7 +86,6 @@ public:
     
     virtual void printDetails() const override {
         Coordinate::printDetails();
-        StreetAddress::printDetails();
         cout << ": " << howMany << " bikes";
     }
 };
@@ -135,49 +112,47 @@ int main() {
     
     
     Bikes notBoris(10,10,
-                   "WC2R 2LS",7,
                    40);
     //|  vtableptr  |  10  | 10 |  40 |
     
     
-    Bikes * b = &notBoris;
-    cout << b << "\n";
-    
-    Coordinate * someCoordinate = b;
-    cout << someCoordinate << "\n";
-    
-    StreetAddress * a = b;
-    cout << a << "\n";
-    
-    Bikes * bikesAgain = static_cast<Bikes*>(a);
-    cout << bikesAgain << "\n";
-    
-    
+    cout << "notBoris.printDetails(): ";
     notBoris.printDetails();
     cout << "\n";
     
     // here be dragons...
-    /*
-    auto vTableForC = reinterpret_cast<double**>(&c);
+    
+    cout << "Coordinate * messWithB = &notBoris;\nCalling messWithB->printDetails() gets: ";
+    Coordinate * messWithB = &notBoris;
+    messWithB->printDetails();
+    cout << "\n";
+    cout << "...which is fine, it shows the virtual function is working\n\n";
+    
+    
+    auto vTableForC = reinterpret_cast<void**>(&c);
     
     cout << "C   is at " << &c << "\n";
     cout << "C.x is at " << &(c.x) << "\n";
-    cout << *vTableForC << "\n";
+    cout << "Before C.x is the v table pointer: " << *vTableForC << "\n";
+    cout << "\n";
     
-    auto vTableForB = reinterpret_cast<double**>(&notBoris);
+    auto vTableForB = reinterpret_cast<void**>(messWithB);
     
     cout << "notBoris   is at " << &notBoris << "\n";
     cout << "notBoris.x is at " << &(notBoris.x) << "\n";
-    cout << *vTableForB << "\n";
+    cout << "Before notBoris.x is the v table pointer: " << *vTableForB << "\n";
+    cout << "\n";
     
     
     *vTableForB = *vTableForC;
     
-    cout << "After assignment: " << *vTableForB << "\n";    
-    cout << "After assignment: " << *vTableForB << "\n";
+    cout << "After assignment, its v table pointer is: " << *vTableForB << "\n";    
     
+    cout << "Calling messWithB->printDetails() now gets: ";
+    messWithB->printDetails();
+    cout << "\n";
     
+    cout << "Calling notBoris.printDetails() still gets: ";
     notBoris.printDetails();
     cout << "\n";
-    */
 }
