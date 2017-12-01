@@ -134,7 +134,7 @@ int main() {
     list<Person> roomForThree;
     
     std::transform(people.begin(),people.end(),
-                   std::back_inserter(roomForThree),
+                   std::inserter(roomForThree, roomForThree.end()),
                    [](const Person & p) {
                        return Person(p.getAwesomeness() + 10,
                                      p.getHeight());
